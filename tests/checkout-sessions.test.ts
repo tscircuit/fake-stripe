@@ -1,5 +1,5 @@
 import { afterEach, expect, test } from "bun:test"
-import { StripeServer, type CheckoutSession } from "../lib/index"
+import { StripeServer, type CheckoutSession } from "../lib/index.js"
 
 let server: StripeServer | undefined
 

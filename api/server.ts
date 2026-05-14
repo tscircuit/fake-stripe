@@ -1,5 +1,5 @@
-import { handleRoute } from "../lib/routes"
-import type { CheckoutSession, RouteContext } from "../lib/types"
+import { handleRoute } from "../lib/routes/index.js"
+import type { CheckoutSession, RouteContext } from "../lib/types.js"
 
 const checkoutSessions = new Map<string, CheckoutSession>()
 let nextId = 1

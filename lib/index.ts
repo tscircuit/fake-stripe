@@ -2,15 +2,15 @@ import type {
   CheckoutSession,
   CompleteCheckoutSessionOptions,
   StripeServerOptions,
-} from "./types"
-import { handleRoute } from "./routes"
+} from "./types.js"
+import { handleRoute } from "./routes/index.js"
 
 export type {
   CheckoutSession,
   CompleteCheckoutSessionOptions,
   CreateCheckoutSessionRequest,
   StripeServerOptions,
-} from "./types"
+} from "./types.js"
 
 export class StripeServer {
   readonly hostname: string

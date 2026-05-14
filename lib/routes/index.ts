@@ -1,12 +1,12 @@
-import { stripeError } from "../utils"
+import { stripeError } from "../utils.js"
 import {
   completeHostedCheckoutRoute,
   createCheckoutSessionRoute,
   hostedCheckoutPageRoute,
   retrieveCheckoutSessionRoute,
-} from "./checkout-sessions"
-import { getHealthRoute } from "./health"
-import type { RouteContext } from "../types"
+} from "./checkout-sessions.js"
+import { getHealthRoute } from "./health.js"
+import type { RouteContext } from "../types.js"
 
 export async function handleRoute(
   context: RouteContext,

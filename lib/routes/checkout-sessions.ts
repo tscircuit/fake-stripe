@@ -5,14 +5,14 @@ import {
   normalizeMetadata,
   parseRequestBody,
   stripeError,
-} from "../utils"
-import { renderHostedCheckoutPage } from "../checkout-html-page"
+} from "../utils.js"
+import { renderHostedCheckoutPage } from "../checkout-html-page.js"
 import type {
   CheckoutSession,
   CompleteCheckoutSessionOptions,
   RouteContext,
   StripeAddress,
-} from "../types"
+} from "../types.js"
 
 export async function createCheckoutSessionRoute(
   context: RouteContext,

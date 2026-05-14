@@ -2,7 +2,7 @@ import type {
   CheckoutSessionLineItem,
   CheckoutSessionLineItems,
   CreateCheckoutSessionRequest,
-} from "./types"
+} from "./types.js"
 
 export function jsonResponse(data: unknown, init: ResponseInit = {}): Response {
   const headers = new Headers()
