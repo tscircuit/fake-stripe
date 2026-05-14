@@ -1,0 +1,24 @@
+{
+  "name": "fake-stripe",
+  "version": "0.0.1",
+  "description": "Fake Stripe API fixture for testing",
+  "module": "lib/index.ts",
+  "type": "module",
+  "files": ["lib"],
+  "main": "lib/index.ts",
+  "types": "lib/types.ts",
+  "exports": {
+    ".": "./lib/index.ts",
+    "./types": "./lib/types.ts"
+  },
+  "scripts": {
+    "test": "bun test",
+    "typecheck": "bunx tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  }
+}
