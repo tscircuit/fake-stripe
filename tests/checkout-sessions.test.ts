@@ -161,6 +161,107 @@ test("retrieves a checkout session", async () => {
   ).toBe("US")
 })
 
+test("serves a hosted checkout page for a checkout session", async () => {
+  server = new StripeServer()
+  await server.start()
+
+  const createResponse = await fetch(`${server.url}/v1/checkout/sessions`, {
+    method: "POST",
+    headers: {
+      "content-type": "application/json",
+    },
+    body: JSON.stringify({
+      mode: "payment",
+      client_reference_id: "order_page_123",
+      line_items: [
+        {
+          price_data: {
+            currency: "usd",
+            unit_amount: 1200,
+            product_data: {
+              name: "fabricated pcb",
+            },
+          },
+          quantity: 2,
+        },
+      ],
+      success_url:
+        "https://tscircuit.com/orders/order_page_123/success?session_id={CHECKOUT_SESSION_ID}",
+      cancel_url: "https://tscircuit.com/orders/order_page_123/cancel",
+    }),
+  })
+  const session = (await createResponse.json()) as CheckoutSession
+
+  const checkoutResponse = await fetch(session.url)
+
+  expect(checkoutResponse.status).toBe(200)
+  expect(checkoutResponse.headers.get("content-type")).toContain("text/html")
+
+  const html = await checkoutResponse.text()
+  expect(html).toContain('data-testid="fake-stripe-checkout"')
+  expect(html).toContain(`fetch("/v1/checkout/sessions/"`)
+  expect(html).toContain(session.id)
+  expect(html).toContain("fabricated pcb")
+})
+
+test("completes a hosted checkout session", async () => {
+  server = new StripeServer()
+  await server.start()
+
+  const createResponse = await fetch(`${server.url}/v1/checkout/sessions`, {
+    method: "POST",
+    headers: {
+      "content-type": "application/json",
+    },
+    body: JSON.stringify({
+      mode: "payment",
+      client_reference_id: "order_complete_123",
+      success_url:
+        "https://tscircuit.com/orders/order_complete_123/success?session_id={CHECKOUT_SESSION_ID}",
+    }),
+  })
+  const session = (await createResponse.json()) as CheckoutSession
+
+  const completeResponse = await fetch(
+    `${server.url}/checkout/${session.id}/complete`,
+    {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+      },
+      body: JSON.stringify({
+        email: "customer@example.com",
+        name: "Test Customer",
+        line1: "123 Board St",
+        city: "San Francisco",
+        state: "CA",
+        postal_code: "94107",
+        country: "US",
+      }),
+    },
+  )
+
+  expect(completeResponse.status).toBe(200)
+
+  const completedSession = (await completeResponse.json()) as CheckoutSession
+  expect(completedSession.id).toBe(session.id)
+  expect(completedSession.status).toBe("complete")
+  expect(completedSession.payment_status).toBe("paid")
+  expect(completedSession.payment_intent).toBe("pi_fake_2")
+  expect(completedSession.customer_details?.email).toBe("customer@example.com")
+  expect(completedSession.customer_details?.address?.city).toBe("San Francisco")
+  expect(completedSession.shipping_details?.name).toBe("Test Customer")
+  expect(completedSession.shipping_details?.address.country).toBe("US")
+
+  const retrieveResponse = await fetch(
+    `${server.url}/v1/checkout/sessions/${session.id}`,
+  )
+  const retrievedSession = (await retrieveResponse.json()) as CheckoutSession
+
+  expect(retrievedSession.status).toBe("complete")
+  expect(retrievedSession.customer_details?.email).toBe("customer@example.com")
+})
+
 test("returns a stripe-style error for missing sessions", async () => {
   server = new StripeServer()
   await server.start()
