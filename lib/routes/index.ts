@@ -1,4 +1,4 @@
-import { stripeError } from "../utils.js"
+import { corsPreflightResponse, stripeError, withCors } from "../utils.js"
 import {
   completeHostedCheckoutRoute,
   createCheckoutSessionRoute,
@@ -9,6 +9,17 @@ import { getHealthRoute } from "./health.js"
 import type { RouteContext } from "../types.js"
 
 export async function handleRoute(
+  context: RouteContext,
+  request: Request,
+): Promise<Response> {
+  if (request.method === "OPTIONS") {
+    return corsPreflightResponse(request)
+  }
+
+  return withCors(await handleRouteWithoutCors(context, request), request)
+}
+
+async function handleRouteWithoutCors(
   context: RouteContext,
   request: Request,
 ): Promise<Response> {

@@ -26,6 +26,29 @@ export function stripeError(message: string, status: number): Response {
   )
 }
 
+export function corsPreflightResponse(request: Request): Response {
+  return withCors(new Response(null, { status: 204 }), request)
+}
+
+export function withCors(response: Response, request: Request): Response {
+  const headers = new Headers(response.headers)
+  const requestedHeaders = request.headers.get("access-control-request-headers")
+
+  headers.set("access-control-allow-origin", "*")
+  headers.set("access-control-allow-methods", "GET, POST, OPTIONS")
+  headers.set(
+    "access-control-allow-headers",
+    requestedHeaders ?? "authorization, content-type",
+  )
+  headers.set("access-control-max-age", "86400")
+
+  return new Response(response.body, {
+    status: response.status,
+    statusText: response.statusText,
+    headers,
+  })
+}
+
 export function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value != null && !Array.isArray(value)
 }

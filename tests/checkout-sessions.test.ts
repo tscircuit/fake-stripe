@@ -63,6 +63,46 @@ test("creates a checkout session with json body", async () => {
   expect(session.url).toBe(`${server.url}/checkout/${session.id}`)
 })
 
+test("handles browser cors preflight requests", async () => {
+  server = new StripeServer()
+  await server.start()
+
+  const response = await fetch(`${server.url}/v1/checkout/sessions`, {
+    method: "OPTIONS",
+    headers: {
+      origin: "https://order-dialog.vercel.app",
+      "access-control-request-method": "POST",
+      "access-control-request-headers": "content-type",
+    },
+  })
+
+  expect(response.status).toBe(204)
+  expect(response.headers.get("access-control-allow-origin")).toBe("*")
+  expect(response.headers.get("access-control-allow-methods")).toContain("POST")
+  expect(response.headers.get("access-control-allow-headers")).toBe(
+    "content-type",
+  )
+})
+
+test("adds cors headers to checkout session responses", async () => {
+  server = new StripeServer()
+  await server.start()
+
+  const response = await fetch(`${server.url}/v1/checkout/sessions`, {
+    method: "POST",
+    headers: {
+      "content-type": "application/json",
+      origin: "https://order-dialog.vercel.app",
+    },
+    body: JSON.stringify({
+      mode: "payment",
+    }),
+  })
+
+  expect(response.status).toBe(200)
+  expect(response.headers.get("access-control-allow-origin")).toBe("*")
+})
+
 test("creates a checkout session with stripe-style form body", async () => {
   server = new StripeServer()
   await server.start()
