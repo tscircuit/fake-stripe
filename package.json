@@ -1,5 +1,5 @@
 {
-  "name": "fake-stripe",
+  "name": "@tscircuit/fake-stripe",
   "version": "0.0.1",
   "description": "Fake Stripe API fixture for testing",
   "module": "lib/index.ts",
