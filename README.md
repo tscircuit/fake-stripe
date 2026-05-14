@@ -5,6 +5,8 @@ minimal Checkout Session API surface needed for quick-order flows:
 
 - `POST /v1/checkout/sessions`
 - `GET /v1/checkout/sessions/:id`
+- `GET /checkout/:id`
+- `POST /checkout/:id/complete`
 
 ## Usage
 
@@ -30,10 +32,16 @@ const response = await fetch(`${stripe.url}/v1/checkout/sessions`, {
 
 const session = await response.json();
 
+// Redirect or open this URL from the UI after the order is placed. The fake
+// server returns a small hosted checkout HTML page that collects test customer
+// and shipping details.
+window.location.assign(session.url);
+
 await stripe.stop();
 ```
 
-Use `completeCheckoutSession` in tests to simulate a paid Checkout Session:
+Use the hosted checkout page or `completeCheckoutSession` in tests to simulate a
+paid Checkout Session:
 
 ```ts
 stripe.completeCheckoutSession(session.id, {
