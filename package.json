@@ -13,9 +13,11 @@
   },
   "scripts": {
     "test": "bun test",
+    "format": "biome format --write .",
     "typecheck": "bunx tsc --noEmit"
   },
   "devDependencies": {
+    "@biomejs/biome": "^1.9.2",
     "@types/bun": "latest"
   },
   "peerDependencies": {
