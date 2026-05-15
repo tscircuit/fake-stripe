@@ -9,19 +9,6 @@ import type {
 import type { Middleware, WinterSpecRouteBundle } from "winterspec"
 import { createWinterSpecBundleFromDir } from "winterspec/adapters/node"
 
-type BunServer = {
-  port: number
-  stop(force?: boolean): void
-}
-
-declare const Bun: {
-  serve(options: {
-    hostname: string
-    port: number
-    fetch(request: Request): Response | Promise<Response>
-  }): BunServer
-}
-
 export type {
   CheckoutSession,
   CompleteCheckoutSessionOptions,
@@ -32,7 +19,7 @@ export type {
 export class StripeServer {
   readonly hostname: string
   readonly port: number
-  server: BunServer | undefined
+  server: Bun.Server<Record<string, unknown>> | undefined
   serverUrl: string | undefined
   db: DbClient
   private winterspecBundle: WinterSpecRouteBundle | undefined
