@@ -1,4 +1,4 @@
-import type { CheckoutSession } from "./types.js"
+import type { CheckoutSession } from "./types"
 
 export function renderHostedCheckoutPage(session: CheckoutSession): string {
   const sessionJson = escapeScriptJson(session)

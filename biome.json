@@ -12,7 +12,6 @@
       "cosmos-export",
       "dist",
       "package.json",
-      ".vercel",
       "src/index.css",
       "renovate.json"
     ]

@@ -1,5 +1,5 @@
 import { afterEach, expect, test } from "bun:test"
-import { StripeServer, type CheckoutSession } from "../lib/index.js"
+import { StripeServer, type CheckoutSession } from "../lib/index"
 
 let server: StripeServer | undefined
 
@@ -70,7 +70,7 @@ test("handles browser cors preflight requests", async () => {
   const response = await fetch(`${server.url}/v1/checkout/sessions`, {
     method: "OPTIONS",
     headers: {
-      origin: "https://order-dialog.vercel.app",
+      origin: "https://example.com",
       "access-control-request-method": "POST",
       "access-control-request-headers": "content-type",
     },
@@ -92,7 +92,7 @@ test("adds cors headers to checkout session responses", async () => {
     method: "POST",
     headers: {
       "content-type": "application/json",
-      origin: "https://order-dialog.vercel.app",
+      origin: "https://example.com",
     },
     body: JSON.stringify({
       mode: "payment",

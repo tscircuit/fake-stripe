@@ -1,12 +1,12 @@
-import { corsPreflightResponse, stripeError, withCors } from "../utils.js"
+import { corsPreflightResponse, stripeError, withCors } from "../utils"
 import {
   completeHostedCheckoutRoute,
   createCheckoutSessionRoute,
   hostedCheckoutPageRoute,
   retrieveCheckoutSessionRoute,
-} from "./checkout-sessions.js"
-import { getHealthRoute } from "./health.js"
-import type { RouteContext } from "../types.js"
+} from "./checkout-sessions"
+import { getHealthRoute } from "./health"
+import type { RouteContext } from "../types"
 
 export async function handleRoute(
   context: RouteContext,
