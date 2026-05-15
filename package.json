@@ -19,6 +19,7 @@
     "start": "winterspec dev",
     "dev": "winterspec dev",
     "build": "winterspec bundle -o dist/bundle.js",
+    "prepare": "bun run build",
     "test": "bun test",
     "format": "biome format --write .",
     "typecheck": "bunx tsc --noEmit"
