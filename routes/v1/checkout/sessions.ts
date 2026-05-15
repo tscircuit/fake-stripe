@@ -1,6 +1,6 @@
-import { createCheckoutSession } from "lib/checkout-sessions"
-import { checkoutSessionSchema } from "lib/db/schema"
-import { withRouteSpec } from "lib/middleware/with-winter-spec"
+import { createCheckoutSession } from "../../../lib/checkout-sessions"
+import { checkoutSessionSchema } from "../../../lib/db/schema"
+import { withRouteSpec } from "../../../lib/middleware/with-winter-spec"
 
 export default withRouteSpec({
   methods: ["POST"],

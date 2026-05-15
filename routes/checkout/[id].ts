@@ -1,5 +1,5 @@
-import { hostedCheckoutPage } from "lib/checkout-sessions"
-import { withRouteSpec } from "lib/middleware/with-winter-spec"
+import { hostedCheckoutPage } from "../../lib/checkout-sessions"
+import { withRouteSpec } from "../../lib/middleware/with-winter-spec"
 import { z } from "zod"
 
 export default withRouteSpec({

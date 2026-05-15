@@ -1,4 +1,4 @@
-import { createDatabase, type DbClient } from "lib/db/db-client"
+import { createDatabase, type DbClient } from "../db/db-client"
 import type { Middleware } from "winterspec"
 
 const defaultDb = createDatabase()

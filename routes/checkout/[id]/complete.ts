@@ -1,6 +1,6 @@
-import { completeHostedCheckout } from "lib/checkout-sessions"
-import { checkoutSessionSchema } from "lib/db/schema"
-import { withRouteSpec } from "lib/middleware/with-winter-spec"
+import { completeHostedCheckout } from "../../../lib/checkout-sessions"
+import { checkoutSessionSchema } from "../../../lib/db/schema"
+import { withRouteSpec } from "../../../lib/middleware/with-winter-spec"
 import { z } from "zod"
 
 export default withRouteSpec({

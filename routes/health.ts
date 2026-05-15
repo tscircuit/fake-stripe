@@ -1,4 +1,4 @@
-import { withRouteSpec } from "lib/middleware/with-winter-spec"
+import { withRouteSpec } from "../lib/middleware/with-winter-spec"
 import { z } from "zod"
 
 export default withRouteSpec({
