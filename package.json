@@ -9,7 +9,10 @@
   "types": "lib/types.ts",
   "exports": {
     ".": "./lib/index.ts",
-    "./bundle": "./dist/bundle.js",
+    "./dist/bundle.js": {
+      "types": "./lib/bundle.d.ts",
+      "import": "./dist/bundle.js"
+    },
     "./types": "./lib/types.ts"
   },
   "scripts": {
