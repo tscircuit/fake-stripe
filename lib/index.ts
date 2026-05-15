@@ -1,9 +1,13 @@
+import { join } from "node:path"
+import { completeCheckoutSession } from "./checkout-sessions"
+import { createDatabase, type DbClient } from "./db/db-client"
 import type {
   CheckoutSession,
   CompleteCheckoutSessionOptions,
   StripeServerOptions,
 } from "./types"
-import { handleRoute } from "./routes"
+import type { Middleware, WinterSpecRouteBundle } from "winterspec"
+import { createWinterSpecBundleFromDir } from "winterspec/adapters/node"
 
 export type {
   CheckoutSession,
@@ -15,14 +19,19 @@ export type {
 export class StripeServer {
   readonly hostname: string
   readonly port: number
-  server: Bun.Server<undefined> | undefined
+  server: Bun.Server<Record<string, unknown>> | undefined
   serverUrl: string | undefined
-  checkoutSessions = new Map<string, CheckoutSession>()
-  private nextId = 1
+  db: DbClient
+  private winterspecBundle: WinterSpecRouteBundle | undefined
 
   constructor(options: StripeServerOptions = {}) {
     this.hostname = options.hostname ?? "127.0.0.1"
     this.port = options.port ?? 0
+    this.db = createDatabase()
+  }
+
+  get checkoutSessions(): Map<string, CheckoutSession> {
+    return this.db.getCheckoutSessionsMap()
   }
 
   get url(): string {
@@ -52,44 +61,49 @@ export class StripeServer {
     this.server?.stop(true)
     this.server = undefined
     this.serverUrl = undefined
-    this.checkoutSessions.clear()
+    this.db.clearCheckoutSessions()
   }
 
   getCheckoutSession(id: string): CheckoutSession | undefined {
-    return this.checkoutSessions.get(id)
+    return this.db.getCheckoutSession(id)
   }
 
   completeCheckoutSession(
     id: string,
     options: CompleteCheckoutSessionOptions = {},
   ): CheckoutSession {
-    const session = this.checkoutSessions.get(id)
-    if (session == null) {
-      throw new Error(`Checkout Session not found: ${id}`)
-    }
-
-    const completedSession: CheckoutSession = {
-      ...session,
-      status: "complete",
-      payment_status: "paid",
-      payment_intent: session.payment_intent ?? this.createId("pi_fake"),
-      customer_details: options.customer_details ?? session.customer_details,
-      shipping_details: options.shipping_details ?? session.shipping_details,
-    }
-
-    this.checkoutSessions.set(id, completedSession)
-    return completedSession
+    return completeCheckoutSession(this.db, id, options)
   }
 
   handleRequest = async (request: Request): Promise<Response> => {
-    return handleRoute(this, request)
+    const winterspecBundle = await this.getWinterSpecBundle()
+
+    return winterspecBundle.makeRequest(request, {
+      middleware: [this.getDbMiddleware()],
+    })
   }
 
   createId(prefix: string): string {
-    return `${prefix}_${this.nextId++}`
+    return this.db.createId(prefix)
   }
 
   getUrl(): string {
     return this.url
+  }
+
+  private async getWinterSpecBundle(): Promise<WinterSpecRouteBundle> {
+    this.winterspecBundle ??= await createWinterSpecBundleFromDir(
+      join(import.meta.dir, "../routes"),
+    )
+
+    return this.winterspecBundle
+  }
+
+  private getDbMiddleware(): Middleware {
+    return async (req, ctx, next) => {
+      ;(ctx as { db?: DbClient }).db = this.db
+
+      return next(req, ctx)
+    }
   }
 }

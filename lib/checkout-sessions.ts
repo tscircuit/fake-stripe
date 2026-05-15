@@ -1,23 +1,22 @@
-import {
-  getLineItemCurrency,
-  isRecord,
-  jsonResponse,
-  normalizeMetadata,
-  parseRequestBody,
-  stripeError,
-} from "../utils"
-import { renderHostedCheckoutPage } from "../checkout-html-page"
+import { renderHostedCheckoutPage } from "./checkout-html-page"
+import type { DbClient } from "./db/db-client"
 import type {
   CheckoutSession,
   CompleteCheckoutSessionOptions,
-  RouteContext,
   StripeAddress,
-} from "../types"
+} from "./types"
+import {
+  getLineItemCurrency,
+  isRecord,
+  normalizeMetadata,
+  parseRequestBody,
+  stripeError,
+} from "./utils"
 
-export async function createCheckoutSessionRoute(
-  context: RouteContext,
+export async function createCheckoutSession(
+  db: DbClient,
   request: Request,
-): Promise<Response> {
+): Promise<CheckoutSession | Response> {
   const body = await parseRequestBody(request)
   const mode = body.mode ?? "payment"
 
@@ -25,7 +24,7 @@ export async function createCheckoutSessionRoute(
     return stripeError("Only payment mode is supported", 400)
   }
 
-  const id = context.createId("cs_test")
+  const id = db.createId("cs_test")
   const session: CheckoutSession = {
     id,
     object: "checkout.session",
@@ -43,32 +42,29 @@ export async function createCheckoutSessionRoute(
     shipping_address_collection: body.shipping_address_collection ?? null,
     shipping_details: null,
     customer_details: null,
-    url: `${context.getUrl()}/checkout/${id}`,
+    url: `${new URL(request.url).origin}/checkout/${id}`,
   }
 
-  context.checkoutSessions.set(id, session)
+  db.setCheckoutSession(session)
 
-  return jsonResponse(session)
+  return session
 }
 
-export function retrieveCheckoutSessionRoute(
-  context: RouteContext,
+export function retrieveCheckoutSession(
+  db: DbClient,
   id: string,
-): Response {
-  const session = context.checkoutSessions.get(id)
+): CheckoutSession | Response {
+  const session = db.getCheckoutSession(id)
 
   if (session == null) {
     return stripeError(`No such checkout.session: '${id}'`, 404)
   }
 
-  return jsonResponse(session)
+  return session
 }
 
-export function hostedCheckoutPageRoute(
-  context: RouteContext,
-  id: string,
-): Response {
-  const session = context.checkoutSessions.get(id)
+export function hostedCheckoutPage(db: DbClient, id: string): Response {
+  const session = db.getCheckoutSession(id)
 
   if (session == null) {
     return stripeError(`No such checkout.session: '${id}'`, 404)
@@ -77,30 +73,44 @@ export function hostedCheckoutPageRoute(
   return htmlResponse(renderHostedCheckoutPage(session))
 }
 
-export async function completeHostedCheckoutRoute(
-  context: RouteContext,
+export async function completeHostedCheckout(
+  db: DbClient,
   request: Request,
   id: string,
-): Promise<Response> {
-  const session = context.checkoutSessions.get(id)
+): Promise<CheckoutSession | Response> {
+  const session = db.getCheckoutSession(id)
 
   if (session == null) {
     return stripeError(`No such checkout.session: '${id}'`, 404)
   }
 
   const details = await parseHostedCheckoutDetails(request)
+
+  return completeCheckoutSession(db, id, details)
+}
+
+export function completeCheckoutSession(
+  db: DbClient,
+  id: string,
+  options: CompleteCheckoutSessionOptions = {},
+): CheckoutSession {
+  const session = db.getCheckoutSession(id)
+  if (session == null) {
+    throw new Error(`Checkout Session not found: ${id}`)
+  }
+
   const completedSession: CheckoutSession = {
     ...session,
     status: "complete",
     payment_status: "paid",
-    payment_intent: session.payment_intent ?? context.createId("pi_fake"),
-    customer_details: details.customer_details ?? session.customer_details,
-    shipping_details: details.shipping_details ?? session.shipping_details,
+    payment_intent: session.payment_intent ?? db.createId("pi_fake"),
+    customer_details: options.customer_details ?? session.customer_details,
+    shipping_details: options.shipping_details ?? session.shipping_details,
   }
 
-  context.checkoutSessions.set(id, completedSession)
+  db.setCheckoutSession(completedSession)
 
-  return jsonResponse(completedSession)
+  return completedSession
 }
 
 function htmlResponse(html: string): Response {
